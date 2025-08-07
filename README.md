@@ -60,7 +60,7 @@ export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
 cd ~
 wget https://download.terasic.com/downloads/cd-rom/de10-agilex/linux_BSP/DE10_Agilex_revC_linux_BSP_21.2.zip
 unzip DE10_Agilex_revC_linux_BSP_21.2.zip
-# Password: ***REMOVED***
+# Password: ###################### REDACTED ################################
 rm DE10_Agilex_revC_linux_BSP_21.2.zip
 sudo mkdir -p /opt/intel/oneapi/intelfpgadpcpp/latest/board/
 sudo mv de10_agilex/ /opt/intel/oneapi/intelfpgadpcpp/latest/board/
