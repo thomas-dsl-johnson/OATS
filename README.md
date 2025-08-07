@@ -1,4 +1,5 @@
-# Configuration-of-oneAPI-FPGA-Runtime-for-DE10-Agilex
+# OneAPI Agilex Toolchain
+## Configuration-of-oneAPI-FPGA-Runtime-for-DE10-Agilex
 
 ```bash
 # Installing Intel oneAPI Base Toolkit. Download the offline installer for Intel oneAPI Base Toolkit and execute it as follows:
