@@ -48,9 +48,10 @@ sudo nano /etc/udev/rules.d/51-usbblaster.rules
 #    ENV{ID_BUS}=="usb", ENV{ID_VENDOR_ID}=="09fb", ENV{ID_MODEL_ID}=="6810", MODE="0666"
 # Then reload udev rules or reboot.
 
-# Do Quartus Install
-# TODO : fill in information
-# End of Quartus Install
+# Do Quartus Install - You need to install Quartus 21.2 (not other versions)
+# Previously, this was not necessary. Now we need to install it separately because of the divorce between Intel and Altera.
+sudo wget 'https://downloads.intel.com/akdlm/software/acdsinst/21.2/72/ib_tar/Quartus-pro-21.2.0.72-linux-complete.tar'
+# Extract 
 export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
 
 # Installing the DE10-Agilex Board Support Package (BSP)
