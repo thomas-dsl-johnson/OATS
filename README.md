@@ -1,25 +1,22 @@
 # Configuration-of-oneAPI-FPGA-Runtime-for-DE10-Agilex
 
 ```bash
-# remove the current oneapi install
-cd /opt/intel/ 
-sudo rm -rf oneapi/
-
-# Get the 2025.2.0 version of Intel oneAPI Base Toolkit offline installer - Linux
-# I could not find a way to install any early versions.
+# Installing Intel oneAPI Base Toolkit. Download the offline installer for Intel oneAPI Base Toolkit and execute it as follows:
+# We get the 2025.2.0 version of Intel oneAPI Base Toolkit offline installer - Linux. I could not find a way to install any early versions.
 cd /
 sudo wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/bd1d0273-a931-4f7e-ab76-6a2a67d646c7/intel-oneapi-base-toolkit-2025.2.0.592_offline.sh
 ls # Should see intel-oneapi-base-toolkit-2025.2.0.592_offline.sh
 
-# get the FPGA support package offline installer - Linux
+# Installing Intel FPGA Add-on for oneAPI Base Toolkit
+# We get the FPGA support package offline installer - Linux
 sudo wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/ff129224-aa19-48f7-96d4-ad12d2d427f9/intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
 ls # Should also now see intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
 
-# make the offline installers executable
+# Make the offline installers executable
 sudo chmod +x intel-oneapi-base-toolkit-2025.2.0.592_offline.sh
 sudo chmod +x intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
 
-# run the installer
+# Run the installers
 sudo ./intel-oneapi-base-toolkit-2025.2.0.592_offline.sh
 # "The following tools have been processed successfully: 
 #  Intel® oneAPI Base Toolkit 2025.2
@@ -29,23 +26,35 @@ sudo ./intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
 #  FPGA Support Package for the Intel® oneAPI DPC++/C++ Compiler 2025.0.0
 #  Download location: /root/intel"
 
-# clean up
+# Clean up
 sudo rm intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
 sudo rm intel-oneapi-base-toolkit-2025.2.0.592_offline.sh
 
-# source setvars.sh
-cd intel/oneapi
-chmod +x setvars.sh
-source setvars.sh
-cd /
-# add to ./bashrc file
-echo 'source /opt/intel/oneapi/setvars.sh' >> ~/.bashrc
+# Installing Additional Libraries and Tools
+# Some samples and build systems require development tools not included in the base toolkit. Install the following:
+sudo apt update
+sudo apt -y install cmake pkg-config build-essential libtinfo5 libncurses5
 
-# Do Quartus Install 
+# Installing USB Blaster II Driver
+# To enable the USB Blaster II device:
+sudo nano /etc/udev/rules.d/51-usbblaster.rules
+# Add the following lines:
+#    # USB-Blaster
+#    ENV{ID_BUS}=="usb", ENV{ID_VENDOR_ID}=="09fb", ENV{ID_MODEL_ID}=="6001", MODE="0666"
+#    ENV{ID_BUS}=="usb", ENV{ID_VENDOR_ID}=="09fb", ENV{ID_MODEL_ID}=="6002", MODE="0666"
+#    ENV{ID_BUS}=="usb", ENV{ID_VENDOR_ID}=="09fb", ENV{ID_MODEL_ID}=="6003", MODE="0666"
+#    # USB-Blaster II
+#    ENV{ID_BUS}=="usb", ENV{ID_VENDOR_ID}=="09fb", ENV{ID_MODEL_ID}=="6010", MODE="0666"
+#    ENV{ID_BUS}=="usb", ENV{ID_VENDOR_ID}=="09fb", ENV{ID_MODEL_ID}=="6810", MODE="0666"
+# Then reload udev rules or reboot.
+
+# Do Quartus Install
+# TODO : fill in information
 # End of Quartus Install
 export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
 
-# Install DE10-Agilex Board Support Package
+# Installing the DE10-Agilex Board Support Package (BSP)
+# Unzip the BSP and move it to the oneAPI board directory:
 cd ~
 wget https://download.terasic.com/downloads/cd-rom/de10-agilex/linux_BSP/DE10_Agilex_revC_linux_BSP_21.2.zip
 unzip DE10_Agilex_revC_linux_BSP_21.2.zip
@@ -53,15 +62,26 @@ unzip DE10_Agilex_revC_linux_BSP_21.2.zip
 rm DE10_Agilex_revC_linux_BSP_21.2.zip
 sudo mkdir -p /opt/intel/oneapi/intelfpgadpcpp/latest/board/
 sudo mv de10_agilex/ /opt/intel/oneapi/intelfpgadpcpp/latest/board/
+
+# Setting up the Board and Environment
+# Source the oneAPI environment:
+cd intel/oneapi
+chmod +x setvars.sh
+source setvars.sh
+cd /
+# Add to ./bashrc file
+echo 'source /opt/intel/oneapi/setvars.sh' >> ~/.bashrc
+
+# Run the bring-up script:
 cd /opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex/bringup/B2E2_8GBx4/
 ./bringup_fpga.sh fpga
 
-#
+# Verify PCIe device visibility:
 lspci -d 1172: 
 # 01:00.0 Processing accelerators: Altera Corporation Device 35b4 (rev 01)
 export PATH=/intelFPGA_pro/21.2/hld/host/linux64/bin:$PATH
 aocl diagnose
-# No board support packages installed.
+# No board support packages installed. I think this is not good ...
 
 # Download vector add
 oneapi-cli
@@ -70,6 +90,7 @@ cd build
 cmake ..
 make cpu-gpu
 ./vector-add-buffers
+# Output:
 # Running on device: AMD Ryzen 3 3200G with Radeon Vega Graphics
 # Vector size: 10000
 # [0]: 0 + 0 = 0
