@@ -1,4 +1,4 @@
-# OneAPI Agilex Technical Setup
+# OneAPI and Agilex Technical Setup
 ## Configuration-of-oneAPI-FPGA-Runtime-for-DE10-Agilex
 
 ```bash
