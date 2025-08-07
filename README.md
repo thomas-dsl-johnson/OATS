@@ -100,6 +100,9 @@ make cpu-gpu
 # ...
 # [9999]: 9999 + 9999 = 19998
 # Vector add successfully completed on device.
+
+# Note:
+# Using oneapi-cli 2025 does not have any FPGA options.
 ```
 
 **Intel® oneAPI Base Toolkit 2025.2**
@@ -110,3 +113,19 @@ Developer forum: https://community.intel.com/t5/Software-Development-Tools/ct-p/
 
 Release notes: https://www.intel.com/content/www/us/en/developer/articles/release-notes/intel-oneapi-toolkit-release-notes.html
 
+
+```bash
+export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
+export AOCL_BOARD_PACKAGE_ROOT=/opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex
+export PATH=$QUARTUS_ROOTDIR/bin:$PATH
+export LD_LIBRARY_PATH=$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:$LD_LIBRARY_PATH
+export PATH=/intelFPGA_pro/21.2/hld/host/linux64/bin:$PATH
+aocl diagnose
+aocl install
+
+source /opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex/init_env.sh
+cd /opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex/bringup/B2E2_8GBx4/
+./bringup_fpga.sh fpga
+export PATH=/intelFPGA_pro/21.2/hld/host/linux64/bin:$PATH
+aocl diagnose
+```
