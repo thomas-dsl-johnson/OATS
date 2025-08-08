@@ -114,7 +114,7 @@ Developer forum: https://community.intel.com/t5/Software-Development-Tools/ct-p/
 
 Release notes: https://www.intel.com/content/www/us/en/developer/articles/release-notes/intel-oneapi-toolkit-release-notes.html
 
-
+Upon opening a fresh terminal:
 ```bash
 export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
 export AOCL_BOARD_PACKAGE_ROOT=/opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex
