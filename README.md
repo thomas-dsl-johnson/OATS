@@ -106,14 +106,6 @@ make cpu-gpu
 # Using oneapi-cli 2025 does not have any FPGA options.
 ```
 
-**Intel® oneAPI Base Toolkit 2025.2**
-
-Get started guide: https://www.intel.com/content/www/us/en/docs/oneapi-base-toolkit/get-started-guide-linux/current/overview.html
-
-Developer forum: https://community.intel.com/t5/Software-Development-Tools/ct-p/software-dev-tools
-
-Release notes: https://www.intel.com/content/www/us/en/developer/articles/release-notes/intel-oneapi-toolkit-release-notes.html
-
 Upon opening a fresh terminal:
 ```bash
 export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
@@ -130,3 +122,51 @@ cd /opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex/bringup/B2E2_8GBx4/
 export PATH=/intelFPGA_pro/21.2/hld/host/linux64/bin:$PATH
 aocl diagnose
 ```
+## Configuration of Docker Image of OneAPI
+Since Intel's acquisition of Altera, the FPGA development tools (Quartus, now under the Altera brand again) and the OneAPI software tools have been on increasingly separate development tracks. You cannot mix and match major versions and expect them to work. So, the plan now is to use Docker.
+
+**What is it:** A Docker image is a self-contained package with a specific Linux OS, all the correct tool versions (Quartus, oneAPI, libraries), and pre-configured environment variables.
+
+**Why is it useful:** It completely isolates the development environment from your host machine, eliminating any chance of version conflicts or incorrect setup.
+
+On FPGA server:
+```bash
+# 1. Install Docker
+
+# 2. Pull the relevant image from Intel's Docker Hub.
+docker pull intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
+# The download is 5.6 Gb, it may take some time
+
+# Run the container, giving it access to the physical FPGA device. 
+# The lspci command showed my device at 01:00.0.
+# We need to find its corresponding device file in /dev. 
+# It might be /dev/intel-fpga-pci.0 or similar.
+```
+
+On local (M1 MacBook):
+```bash
+# 1. Install Docker
+# Download from https://www.docker.com/products/docker-desktop/
+# Mount the .dmg
+
+# 2. Pull the relevant image from Intel's Docker Hub.
+docker pull intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
+# The download is 5.6 Gb, it may take some time
+
+# 3. Set up directory
+mkdir ~/docker_oneapi
+cd ~/docker_oneapi
+
+# 4. Run the container
+docker run -it --rm -v ~/oneapi_project:/host intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
+# There may be a warning, but it is fine to proceed
+
+# Proceed similarly as we did on the FPGA server
+# 5. Install dependencies
+apt-get update && apt-get install -y wget unzip build-essential pkg-config cmake libtinfo5 libncurses5
+# 6. Install Quartus
+cd /tmp
+wget https://downloads.intel.com/akdlm/software/acdsinst/21.2/72/ib_tar/Quartus-pro-21.2.0.72-linux-complete.tar
+
+```
+
