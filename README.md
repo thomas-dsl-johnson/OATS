@@ -149,7 +149,7 @@ On local (M1 MacBook):
 # Download from https://www.docker.com/products/docker-desktop/
 # Mount the .dmg
 
-# 2. Pull the relevant image from Intel's Docker Hub.
+# 2. Pull the relevant image from Intel's Docker Hub. See https://hub.docker.com/r/intel/oneapi-basekit/tags?page=3
 docker pull intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
 # The download is 5.6 Gb, it may take some time
 
@@ -157,16 +157,33 @@ docker pull intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
 mkdir ~/docker_oneapi
 cd ~/docker_oneapi
 
-# 4. Run the container
-docker run -it --rm -v ~/oneapi_project:/host intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
-# There may be a warning, but it is fine to proceed
+# 4. Create the container
+docker run -it -v ~/oneapi_project:/host intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
+# Open a new terminal and list containers
+docker ps -a
+# Copy CONTAINER ID of intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04 e.g. abc123def456
+# Create Image
+docker commit abc123def456 my_oneapi_image
+# Close container and run
+docker run -it --name my_oneapi_dev -v ~/oneapi_project:/host my_oneapi_image
+# In future
+docker start -ai my_oneapi_dev
+# n.b. If you ever want to get rid of it and start fresh
+docker rm my_oneapi_dev
 
-# Proceed similarly as we did on the FPGA server
+## Proceed similarly as we did on the FPGA server
 # 5. Install dependencies
 apt-get update && apt-get install -y wget unzip build-essential pkg-config cmake libtinfo5 libncurses5
+
 # 6. Install Quartus
 cd /tmp
 wget https://downloads.intel.com/akdlm/software/acdsinst/21.2/72/ib_tar/Quartus-pro-21.2.0.72-linux-complete.tar
+# Extract
+tar -xf Quartus-pro-21.2.0.72-linux-complete.tar
 
+# 7. Get BSP
+wget https://download.terasic.com/downloads/cd-rom/de10-agilex/linux_BSP/DE10_Agilex_revC_linux_BSP_21.2.zip
+# Unzip
+unzip DE10_Agilex_revC_linux_BSP_21.2.zip
 ```
 
