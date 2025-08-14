@@ -52,7 +52,9 @@ sudo nano /etc/udev/rules.d/51-usbblaster.rules
 # Do Quartus Install - You need to install Quartus 21.2 (not other versions)
 # Previously, this was not necessary. Now we need to install it separately because of the divorce between Intel and Altera.
 sudo wget 'https://downloads.intel.com/akdlm/software/acdsinst/21.2/72/ib_tar/Quartus-pro-21.2.0.72-linux-complete.tar'
-# Extract 
+# Extract
+tar -xf Quartus-pro-21.2.0.72-linux-complete.tar
+./setup_pro.sh 
 export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
 
 # Installing the DE10-Agilex Board Support Package (BSP)
@@ -137,10 +139,8 @@ On FPGA server:
 docker pull intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
 # The download is 5.6 Gb, it may take some time
 
-# Run the container, giving it access to the physical FPGA device. 
-# The lspci command showed my device at 01:00.0.
-# We need to find its corresponding device file in /dev. 
-# It might be /dev/intel-fpga-pci.0 or similar.
+# ... Proceed Similarly to `on local`
+# Need to set --device flag on setup
 ```
 
 On local (M1 MacBook):
@@ -180,10 +180,54 @@ cd /tmp
 wget https://downloads.intel.com/akdlm/software/acdsinst/21.2/72/ib_tar/Quartus-pro-21.2.0.72-linux-complete.tar
 # Extract
 tar -xf Quartus-pro-21.2.0.72-linux-complete.tar
+# Set up
+./setup_pro.sh
+export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
+
 
 # 7. Get BSP
 wget https://download.terasic.com/downloads/cd-rom/de10-agilex/linux_BSP/DE10_Agilex_revC_linux_BSP_21.2.zip
 # Unzip
 unzip DE10_Agilex_revC_linux_BSP_21.2.zip
+
+# Conclusion ... Unsuccessful
+```
+
+<img src="assets/img.png" alt="drawing" height="245"/>
+<img src="assets/img0.png" alt="drawing" height="245"/>
+<img src="assets/img1.png" alt="drawing" height="200"/>
+
+
+On Cloud VM:
+```bash
+# We are on Debian 6.1.140-1 (2025-05-22) x86_64
+
+# 1. Install Docker Engine
+# Following instructions on: 
+# https://docs.docker.com/engine/install/debian/
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+# Use the convenience script
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# 2. Pull the relevant image from Intel's Docker Hub. See https://hub.docker.com/r/intel/oneapi-basekit/tags?page=3
+sudo docker pull intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
+
+# 3. Make dir
+mkdir ~/oneapi_fpga_project
+cd oneapi_fpga_project
+
+# 4.
+sudo docker run --name my_oneapi_dev -it -v ~/oneapi_fpga_project:/host_project intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04 /bin/bash
+# In future
+sudo docker start -ai my_oneapi_dev
+
+5.
+apt-get update && apt-get install -y git wget unzip build-essential pkg-config cmake libtinfo5 libncurses5
+
+6.
+wget https://downloads.intel.com/akdlm/software/acdsinst/21.2/72/ib_tar/Quartus-pro-21.2.0.72-linux-complete.tar
+tar -xf Quartus-pro-21.2.0.72-linux-complete.tar
 ```
 
