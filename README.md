@@ -171,31 +171,7 @@ docker start -ai my_oneapi_dev
 # n.b. If you ever want to get rid of it and start fresh
 docker rm my_oneapi_dev
 
-## Proceed similarly as we did on the FPGA server
-# 5. Install dependencies
-apt-get update && apt-get install -y wget unzip build-essential pkg-config cmake libtinfo5 libncurses5
-
-# 6. Install Quartus
-cd /tmp
-wget https://downloads.intel.com/akdlm/software/acdsinst/21.2/72/ib_tar/Quartus-pro-21.2.0.72-linux-complete.tar
-# Extract
-tar -xf Quartus-pro-21.2.0.72-linux-complete.tar
-# Set up
-./setup_pro.sh
-export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
-
-
-# 7. Get BSP
-wget https://download.terasic.com/downloads/cd-rom/de10-agilex/linux_BSP/DE10_Agilex_revC_linux_BSP_21.2.zip
-# Unzip
-unzip DE10_Agilex_revC_linux_BSP_21.2.zip
-
-# Conclusion ... Unsuccessful
 ```
-
-<img src="assets/img.png" alt="drawing" height="200"/>
-<img src="assets/img0.png" alt="drawing" height="200"/>
-<img src="assets/img1.png" alt="drawing" height="200"/>
 
 
 On Cloud VM:
@@ -218,47 +194,24 @@ sudo docker pull intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
 mkdir ~/oneapi_fpga_project
 cd oneapi_fpga_project
 
-# 4.
+# 4. Create the container
 sudo docker run --name my_oneapi_dev -it -v ~/oneapi_fpga_project:/host_project intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04 /bin/bash
 # In future
 sudo docker start -ai my_oneapi_dev
+```
 
-# 5.
+Inside docker:
+```bash
+# 5. Install dependencies 
 apt-get update && apt-get install -y git wget unzip build-essential pkg-config cmake libtinfo5 libncurses5
 
-# 6.
+# 6. Install Quartus
 wget https://downloads.intel.com/akdlm/software/acdsinst/21.2/72/ib_tar/Quartus-pro-21.2.0.72-linux-complete.tar
 tar -xf Quartus-pro-21.2.0.72-linux-complete.tar
 ./setup_pro.sh 
 export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
 
-## 7. No need to do DE10 BSP
-## Installing the DE10-Agilex Board Support Package (BSP)
-## Unzip the BSP and move it to the oneAPI board directory:
-#cd ~
-#wget https://download.terasic.com/downloads/cd-rom/de10-agilex/linux_BSP/DE10_Agilex_revC_linux_BSP_21.2.zip
-#unzip DE10_Agilex_revC_linux_BSP_21.2.zip
-## Password: ###################### REDACTED ################################
-#rm DE10_Agilex_revC_linux_BSP_21.2.zip
-#mkdir -p /opt/intel/oneapi/intelfpgadpcpp/latest/board/
-#mv de10_agilex/ /opt/intel/oneapi/intelfpgadpcpp/latest/board/
-## Setting up the Board and Environment
-## Source the oneAPI environment:
-#cd /opt/intel/oneapi
-#source setvars.sh
-#cd /
-## Add to ./bashrc file
-#echo 'source /opt/intel/oneapi/setvars.sh' >> ~/.bashrc
-## Run the bring-up script:
-# cd /opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex/bringup/B2E2_8GBx4/
-# export QUARTUS_ROOTDIR=/root/intelFPGA_pro/21.2/quartus/
-# ./bringup_fpga.sh fpga
-## Verify PCIe device visibility:
-#lspci -d 1172: 
-## 01:00.0 Processing accelerators: Altera Corporation Device 35b4 (rev 01)
-#export PATH=/intelFPGA_pro/21.2/hld/host/linux64/bin:$PATH
-#aocl diagnose
-
+# 7.
 # Get samples https://github.com/oneapi-src/oneAPI-samples/releases/tag/2022.1.0
 apt-get update && apt-get install -y git
 # Could not find vector add in the following: git clone -b 2022.1.0 https://github.com/oneapi-src/oneAPI-samples.git
@@ -287,10 +240,6 @@ mkdir build
 cd build
 cmake ..
 make fpga_emu
-
-
-######
-#TODO:
 ```
 
 
