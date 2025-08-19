@@ -170,7 +170,6 @@ docker run -it --name my_oneapi_dev -v ~/oneapi_project:/host my_oneapi_image
 docker start -ai my_oneapi_dev
 # n.b. If you ever want to get rid of it and start fresh
 docker rm my_oneapi_dev
-
 ```
 
 
@@ -201,11 +200,15 @@ sudo docker start -ai my_oneapi_dev
 ```
 
 Inside docker:
+1. Set up
 ```bash
+# Make sure you have run: sudo docker start -ai my_oneapi_dev
+
 # 5. Install dependencies 
 apt-get update && apt-get install -y git wget unzip build-essential pkg-config cmake libtinfo5 libncurses5
 
 # 6. Install Quartus
+cd tmp
 wget https://downloads.intel.com/akdlm/software/acdsinst/21.2/72/ib_tar/Quartus-pro-21.2.0.72-linux-complete.tar
 tar -xf Quartus-pro-21.2.0.72-linux-complete.tar
 ./setup_pro.sh 
@@ -215,32 +218,110 @@ export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
 # Get samples https://github.com/oneapi-src/oneAPI-samples/releases/tag/2022.1.0
 apt-get update && apt-get install -y git
 # Could not find vector add in the following: git clone -b 2022.1.0 https://github.com/oneapi-src/oneAPI-samples.git
-git clone -b 2023.1.0 https://github.com/oneapi-src/oneAPI-samples.git
-cd /oneAPI-samples/DirectProgramming/C++SYCL_FPGA/Tutorials/GettingStarted/fpga_compile
+# Vector add not compatible in the following: git clone -b 2023.1.0 https://github.com/oneapi-src/oneAPI-samples.git
+git clone -b 2022.3.0 https://github.com/oneapi-src/oneAPI-samples.git
+cd /tmp/oneAPI-samples/DirectProgramming/DPC++FPGA/Tutorials/GettingStarted/fpga_compile
 
-## Part 1
-## n.b. goal is to compile and run a standard C++ version of vector addition. 
-## This version uses no SYCL and runs only on CPU.
-## It serves is a non-FPGA starting point.
-cd part1_cpp
+# We now proceed to work through the README_fpga_compile.md
+cat README_fpga_compile.md
+```
+2. Work through fpga_compile for FPGA emulator
+This FPGA tutorial introduces how to compile SYCL*-compliant code for FPGA through a simple vector addition example.
+
+```
+# Generate the `Makefile` by running `cmake`.
+mkdir build
+cd build
+# To compile for the Intel® PAC with Intel Arria® 10 GX FPGA, run `cmake` using the command:
+cmake ..
+# Compile the design through the generated `Makefile`. The following build targets are provided, matching the recommended development flow.
+# Compile for emulation (compiles quickly, targets emulated FPGA device)
+make fpga_emu
+# For other options see the README.md file in assets
+# If an error occurs, you can get more details by running `make` with the `VERBOSE=1` argument:
+# (optional) make VERBOSE=1
+# Run the sample on the FPGA emulator (the kernel executes on the CPU):
+./fpga_compile.fpga_emu
+## Running on device: Intel(R) FPGA Emulation Device
+## PASSED: results are correct
+```
+3. Work through fpga_recompile for FPGA emulator
+This FPGA tutorial demonstrates how to separate the compilation of a program's host code and device code to save development time.
+Learning points:
+* Why to separate host and device code compilation in your FPGA project 
+* How to use the -reuse-exe and device link methods 
+* Which method to choose for your project
+
+Intel® oneAPI DPC++ Compiler only supports ahead-of-time (AoT) compilation for FPGA, which means that an FPGA device image is generated at compile time. The FPGA device image generation process can take hours to complete. Suppose you make a change that is exclusive to the host code. In that case, it is more efficient to recompile your host code only, re-using the existing FPGA device image and circumventing the time-consuming device compilation process.
+
+The compiler provides two different mechanisms to separate device code and host code compilation.
+
+**Method 1**
+Passing the -reuse-exe=<exe_name> flag to dpcpp instructs the compiler to attempt to reuse the existing FPGA device image.
+The more explicit "device link" method requires you to separate the host and device code into separate files. When a code change only applies to host-only files, an FPGA device image is not regenerated.
+If the device code and options affecting the device have not changed since the previous compilation, passing the -reuse-exe=<exe_name> flag to dpcpp instructs the compiler to extract the compiled FPGA binary from the existing executable and package it into the new executable, saving the device compilation time.
+1. Initial compilation
+dpcpp <files.cpp> -o out.fpga -Xshardware -fintelfpga
+The initial compilation generates an FPGA device image, which takes several hours. Now, make some changes to the host code.
+2. Subsequent recompilation
+dpcpp <files.cpp> -o out.fpga -reuse-exe=out.fpga -Xshardware -fintelfpga
+
+**Method 2**
+If you want to iterate on the host code and avoid long compile time for your FPGA device, consider using a device link to separate device and host compilation:
+1. Compile the device code:
+   Input files should include all source files that contain device code. This step may take several hours.
+2. Compile the host code:
+   dpcpp -fintelfpga host.cpp -c -o host.o
+   Input files should include all source files that only contain host code. This takes seconds. 
+3. Create the device link:
+   dpcpp -fintelfpga host.o dev_image.a -o fast_recompile.fpga
+   The input should have N (N >= 0) host object files *(.o)* and one device image file *(.a)*. This takes seconds.
+   You only need to perform steps 2 and 3 when modifying host-only files. 
+   The following graph depicts the device link compilation process:
+![](assets/device_link.png)
+
+**Conclusion**
+Of the two methods described, `-reuse-exe` is easier to use. It also allows you to keep your host and device code as single source, which is preferred for small programs.
+
+For larger and more complex projects, the device link method has the advantage of giving you complete control over the compiler's behavior.
+* When using `-reuse-exe`, the compiler must partially recompile and then analyze the device code to ensure that it is unchanged. This takes several minutes for larger designs. Compiling separate files does not incur this extra time.
+* When using `-reuse-exe`, you may occasionally encounter a "false positive" where the compiler wrongly believes that it must recompile your device code. In a single source file, the device and host code are coupled, so some changes to the host code _can_ change the compiler's view of the device code. The compiler will always behave conservatively and trigger a full recompilation if it cannot prove that reusing the previous FPGA binary is safe. Compiling separate files eliminates this possibility.
+
+Running the sample:
+```bash
 mkdir build
 cd build
 cmake ..
+# Compile for emulation (fast compile time, targets emulated FPGA device)
 make fpga_emu
-./vector_add.fpga_emu
-# RESULT:
-# Started/fpga_compile/part1_cpp/build# ./vector_add.fpga_emu
-# add two vectors of size 256
-# PASSED
-
-## Part 2
-cd ../..
-cd part2_dpcpp_functor_usm
-mkdir build
-cd build
-cmake ..
-make fpga_emu
+./fast_recompile.fpga_emu 
+# PASSED: results are correct
 ```
 
+
+### Useful Information
+
+#### Three types of SYCL for FPGA compilation
+The three types of FPGA compilation are summarized in the table below.
+
+| Device Image Type    | Time to Compile | Description
+---                    |---              |---
+| FPGA Emulator        | seconds         | The FPGA device code is compiled to the CPU. <br> This is used to verify the code's functional correctness.
+| Optimization Report  | minutes         | The FPGA device code is partially compiled for hardware. <br> The compiler generates an optimization report that describes the structures generated on the FPGA, identifies performance bottlenecks, and estimates resource utilization.
+| FPGA Hardware        | hours           | Generates the real FPGA bitstream to execute on the target FPGA platform
+
+The typical FPGA development workflow is to iterate in each of these stages, refining the code using the feedback provided by that stage. Intel® recommends relying on emulation and the optimization report whenever possible.
+
+#### Important caveats to remember when using the FPGA emulator.
+*  **Performance is not representative.** _Never_ draw inferences about FPGA performance from the FPGA emulator. The FPGA emulator's timing behavior is uncorrelated to that of the physical FPGA hardware. For example, an optimization that yields a 100x performance improvement on the FPGA may show no impact on the emulator performance. It may show an unrelated increase or even a decrease.
+* **Undefined behavior may differ.** If your code produces different results when compiled for the FPGA emulator versus FPGA hardware, your code most likely exercises undefined behavior. By definition, undefined behavior is not specified by the language specification and may manifest differently on different targets.
+
+#### Device Selection
+See the README.md in `assets/`
+
+#### Additional Documentation
+- [Explore SYCL* Through Intel&reg; FPGA Code Samples](https://software.intel.com/content/www/us/en/develop/articles/explore-dpcpp-through-intel-fpga-code-samples.html) helps you to navigate the samples and build your knowledge of FPGAs and SYCL.
+- [FPGA Optimization Guide for Intel&reg; oneAPI Toolkits](https://software.intel.com/content/www/us/en/develop/documentation/oneapi-fpga-optimization-guide) helps you understand how to target FPGAs using SYCL and Intel&reg; oneAPI Toolkits.
+- [Intel&reg; oneAPI Programming Guide](https://software.intel.com/en-us/oneapi-programming-guide) helps you understand target-independent, SYCL-compliant programming using Intel&reg; oneAPI Toolkits.
 
 
