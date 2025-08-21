@@ -124,7 +124,7 @@ cd /opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex/bringup/B2E2_8GBx4/
 export PATH=/intelFPGA_pro/21.2/hld/host/linux64/bin:$PATH
 aocl diagnose
 ```
-## Configuration of Docker Image of OneAPI
+## Configuration of Docker Image of OneAPI 2022.1.2
 Since Intel's acquisition of Altera, the FPGA development tools (Quartus, now under the Altera brand again) and the OneAPI software tools have been on increasingly separate development tracks. You cannot mix and match major versions and expect them to work. So, the plan now is to use Docker.
 
 **What is it:** A Docker image is a self-contained package with a specific Linux OS, all the correct tool versions (Quartus, oneAPI, libraries), and pre-configured environment variables.
@@ -133,6 +133,8 @@ Since Intel's acquisition of Altera, the FPGA development tools (Quartus, now un
 
 On FPGA server:
 ```bash
+# Since the FPGA server is down, this is just a rough sketch
+
 # 1. Install Docker
 
 # 2. Pull the relevant image from Intel's Docker Hub.
@@ -190,22 +192,26 @@ sudo sh get-docker.sh
 sudo docker pull intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
 
 # 3. Make dir
-mkdir ~/oneapi_fpga_project
-cd oneapi_fpga_project
+mkdir ~/oneapi_fpga_2022
+cd oneapi_fpga_2022
 
 # 4. Create the container
-sudo docker run --name my_oneapi_dev -it -v ~/oneapi_fpga_project:/host_project intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04 /bin/bash
+sudo docker run --name my_oneapi_2022 -it -v ~/oneapi_fpga_project:/host_project intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04 /bin/bash
 # In future
-sudo docker start -ai my_oneapi_dev
+sudo docker start -ai my_oneapi_2022
 ```
 
 Inside docker:
 1. Set up
 ```bash
-# Make sure you have run: sudo docker start -ai my_oneapi_dev
+# Make sure you have run: sudo docker start -ai my_oneapi_2022
 
 # 5. Install dependencies 
-apt-get update && apt-get install -y git wget unzip build-essential pkg-config cmake libtinfo5 libncurses5
+apt update 
+apt upgrade
+# Note sure how these work
+apt-get install -y git wget unzip build-essential pkg-config cmake libtinfo5 libncurses5
+apt install libtinfo6 libncurses6
 
 # 6. Install Quartus
 cd tmp
@@ -225,6 +231,10 @@ cd /tmp/oneAPI-samples/DirectProgramming/DPC++FPGA/Tutorials/GettingStarted/fpga
 # We now proceed to work through the README_fpga_compile.md
 cat README_fpga_compile.md
 ```
+We are following the steps outlined here:
+https://github.com/oneapi-src/oneAPI-samples/tree/master/DirectProgramming/C%2B%2BSYCL_FPGA
+
+
 2. Work through fpga_compile for FPGA emulator
 This FPGA tutorial introduces how to compile SYCL*-compliant code for FPGA through a simple vector addition example.
 
@@ -278,7 +288,7 @@ If you want to iterate on the host code and avoid long compile time for your FPG
    The input should have N (N >= 0) host object files *(.o)* and one device image file *(.a)*. This takes seconds.
    You only need to perform steps 2 and 3 when modifying host-only files. 
    The following graph depicts the device link compilation process:
-![](assets/device_link.png)
+![](assets/getting started material 2022.0/device_link.png)
 
 **Conclusion**
 Of the two methods described, `-reuse-exe` is easier to use. It also allows you to keep your host and device code as single source, which is preferred for small programs.
@@ -298,6 +308,112 @@ make fpga_emu
 # PASSED: results are correct
 ```
 
+## Configuration of Docker Image of OneAPI using version 2025.0
+
+We shall proceed similarly to the 2022 version.
+
+On Cloud VM:
+```bash
+# https://hub.docker.com/r/intel/oneapi-basekit/tags?page=3
+# 1. Install Docker Engine (if not already installed)
+# Following instructions on: 
+# https://docs.docker.com/engine/install/debian/
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+# Use the convenience script
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# 2. Pull the relevant image from Intel's Docker Hub. See https://hub.docker.com/r/intel/oneapi-basekit/tags?page=3
+sudo docker pull intel/oneapi-basekit:2025.0.2-0-devel-ubuntu24.04
+
+# 3. Make dir
+mkdir ~/oneapi_fpga_2025
+cd oneapi_fpga_2025
+
+# 4. Create the container
+sudo docker run --name my_oneapi_2025 -it -v ~/oneapi_fpga_2025:/host_project intel/oneapi-basekit:2025.0.2-0-devel-ubuntu24.04 /bin/bash
+# In future
+sudo docker start -ai my_oneapi_2025
+# To restart
+sudo docker rm my_oneapi_2025
+```
+
+Inside docker:
+1. Set up
+```bash
+# Make sure you have run: sudo docker start -ai my_oneapi_2025
+
+# 5. Install dependencies
+apt-get update && apt-get install -y git wget unzip build-essential pkg-config cmake libtinfo5 libncurses5
+
+# 6. Clone examples
+# Note: This is the master branch: https://github.com/oneapi-src/oneAPI-samples/tree/master/
+git clone -b master https://github.com/oneapi-src/oneAPI-samples.git
+cd oneAPI-samples
+```
+2. Vector Add Sample
+ 
+A Hello, World! sample for data parallel programs, so the sample code demonstrates some core features of SYCL*. Additionally, building and running this sample verifies that the development environment is configured correctly for Intel® oneAPI Toolkits.
+```bash
+# 7. example1: vector-add
+cd oneAPI-samples/DirectProgramming/C++SYCL/DenseLinearAlgebra/vector-add/
+
+# Generate the `Makefile` by running `cmake`.
+mkdir build
+cd build
+cmake ..
+make cpu-gpu
+#Running on device: AMD EPYC 7B12
+#Vector size: 10000
+#[0]: 0 + 0 = 0
+#[1]: 1 + 1 = 2
+#[2]: 2 + 2 = 4
+#...
+#[9999]: 9999 + 9999 = 19998
+#Vector add successfully completed on device.
+
+# Quartus (optional)
+cd /tmp
+wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/ff129224-aa19-48f7-96d4-ad12d2d427f9/intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
+chmod +x intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
+./intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
+export QUARTUS_ROOTDIR=/root/intelFPGA_pro/21.2/quartus
+source /opt/intel/oneapi/setvars.sh
+https://www.intel.com/content/www/us/en/docs/oneapi-fpga-add-on/developer-guide/2025-0/installing-the-intel-oneapi-fpga-development.html
+
+
+# FPGA Support Package for the Intel ® oneAPI DPC++/C++ Compile
+apt install intel-oneapi-compiler-fpga-2025.0
+
+cd oneAPI-samples/DirectProgramming/C++SYCL/DenseLinearAlgebra/vector-add/
+make clean
+
+# We also have
+# Compilation Type    Command
+# FPGA Emulator       make fpga_emu
+# Optimization Report make report
+# FPGA Simulator      make fpga_sim
+# FPGA Hardware       make fpga
+
+make fpga_emu
+./vector-add-buffers.fpga_emu
+#Running on device: Intel(R) FPGA Emulation Device
+#Vector size: 10000
+#[0]: 0 + 0 = 0
+#[1]: 1 + 1 = 2
+#[2]: 2 + 2 = 4
+#...
+#[9999]: 9999 + 9999 = 19998
+#Vector add successfully completed on device.
+
+# make fpga_sim
+# Currently the make fpga_sim is not supported 
+# since currently we do not have Questa simulator on our machine.
+
+make fpga
+
+```
 
 ### Useful Information
 
@@ -323,5 +439,6 @@ See the README.md in `assets/`
 - [Explore SYCL* Through Intel&reg; FPGA Code Samples](https://software.intel.com/content/www/us/en/develop/articles/explore-dpcpp-through-intel-fpga-code-samples.html) helps you to navigate the samples and build your knowledge of FPGAs and SYCL.
 - [FPGA Optimization Guide for Intel&reg; oneAPI Toolkits](https://software.intel.com/content/www/us/en/develop/documentation/oneapi-fpga-optimization-guide) helps you understand how to target FPGAs using SYCL and Intel&reg; oneAPI Toolkits.
 - [Intel&reg; oneAPI Programming Guide](https://software.intel.com/en-us/oneapi-programming-guide) helps you understand target-independent, SYCL-compliant programming using Intel&reg; oneAPI Toolkits.
+
 
 
