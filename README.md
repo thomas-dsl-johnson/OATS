@@ -373,17 +373,16 @@ make cpu-gpu
 #[9999]: 9999 + 9999 = 19998
 #Vector add successfully completed on device.
 
-# Quartus (optional)
+#  FPGA Support Package for the Intel ® oneAPI DPC++/C++ Compile attempt I
 cd /tmp
 wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/ff129224-aa19-48f7-96d4-ad12d2d427f9/intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
 chmod +x intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
 ./intel-fpga-support-for-compiler-2025.0.0.591_offline.sh
-export QUARTUS_ROOTDIR=/root/intelFPGA_pro/21.2/quartus
 source /opt/intel/oneapi/setvars.sh
 https://www.intel.com/content/www/us/en/docs/oneapi-fpga-add-on/developer-guide/2025-0/installing-the-intel-oneapi-fpga-development.html
 
 
-# FPGA Support Package for the Intel ® oneAPI DPC++/C++ Compile
+#  FPGA Support Package for the Intel ® oneAPI DPC++/C++ Compile attempt II
 apt install intel-oneapi-compiler-fpga-2025.0
 
 cd oneAPI-samples/DirectProgramming/C++SYCL/DenseLinearAlgebra/vector-add/
@@ -410,6 +409,16 @@ make fpga_emu
 # make fpga_sim
 # Currently the make fpga_sim is not supported 
 # since currently we do not have Questa simulator on our machine.
+
+# Quartus we need a newer version
+sudo wget 'https://downloads.intel.com/akdlm/software/acdsinst/24.2/40/ib_tar/Quartus-pro-24.2.0.40-linux-complete.tar'
+# Extract
+tar -xf Quartus-pro-21.2.0.72-linux-complete.tar
+./setup_pro.sh 
+
+
+export QUARTUS_ROOTDIR=/root/intelFPGA_pro/21.2/quartus
+export QUARTUS_ROOTDIR_OVERRIDE=/root/intelFPGA_pro/21.2/quartus
 
 make fpga
 
