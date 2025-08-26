@@ -411,10 +411,13 @@ make fpga_emu
 # since currently we do not have Questa simulator on our machine.
 
 # Quartus we need a newer version
-sudo wget 'https://downloads.intel.com/akdlm/software/acdsinst/24.2/40/ib_tar/Quartus-pro-24.2.0.40-linux-complete.tar'
+wget 'https://downloads.intel.com/akdlm/software/acdsinst/24.2/40/ib_tar/Quartus-pro-24.2.0.40-linux-complete.tar'
 # Extract
-tar -xf Quartus-pro-21.2.0.72-linux-complete.tar
+tar -xf Quartus-pro-24.2.0.40-linux-complete.tar
 ./setup_pro.sh 
+# Or the 23.3 version
+wget -c https://downloads.intel.com/akdlm/software/acdsinst/23.3/104/ib_tar/Quartus-pro-23.3.0.104-linux-complete.tar
+
 
 
 export QUARTUS_ROOTDIR=/root/intelFPGA_pro/21.2/quartus
