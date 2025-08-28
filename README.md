@@ -1,4 +1,9 @@
 # OneAPI and Agilex Technical Setup
+
+This guide details the process of setting up a development environment for Intel FPGAs using the oneAPI toolkit. Due to version incompatibilities between oneAPI and Quartus, the recommended approach is to use a Docker container to ensure a consistent and isolated environment. See the new [FOOD](https://github.com/thomas-dsl-johnson/FOOD) repository.
+
+The legacy guide for a native installation is included below for historical context.
+
 ## Configuration-of-oneAPI-FPGA-Runtime-for-DE10-Agilex
 
 ```bash
@@ -85,7 +90,7 @@ lspci -d 1172:
 # 01:00.0 Processing accelerators: Altera Corporation Device 35b4 (rev 01)
 export PATH=/intelFPGA_pro/21.2/hld/host/linux64/bin:$PATH
 aocl diagnose
-# No board support packages installed. I think this is not good ...
+# No board support packages installed. This is not good
 
 # Download vector add
 oneapi-cli
@@ -103,12 +108,9 @@ make cpu-gpu
 # ...
 # [9999]: 9999 + 9999 = 19998
 # Vector add successfully completed on device.
-
-# Note:
-# Using oneapi-cli 2025 does not have any FPGA options.
 ```
 
-Upon opening a fresh terminal:
+Upon opening a fresh terminal run the following:
 ```bash
 export QUARTUS_ROOTDIR=/intelFPGA_pro/21.2/quartus/
 export AOCL_BOARD_PACKAGE_ROOT=/opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex
@@ -117,13 +119,13 @@ export LD_LIBRARY_PATH=$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:$LD_LIBRARY_PATH
 export PATH=/intelFPGA_pro/21.2/hld/host/linux64/bin:$PATH
 aocl diagnose
 aocl install
-
 source /opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex/init_env.sh
 cd /opt/intel/oneapi/intelfpgadpcpp/latest/board/de10_agilex/bringup/B2E2_8GBx4/
 ./bringup_fpga.sh fpga
 export PATH=/intelFPGA_pro/21.2/hld/host/linux64/bin:$PATH
 aocl diagnose
 ```
+
 ## Configuration of Docker Image of OneAPI 2022.1.2
 Since Intel's acquisition of Altera, the FPGA development tools (Quartus, now under the Altera brand again) and the OneAPI software tools have been on increasingly separate development tracks. You cannot mix and match major versions and expect them to work. So, the plan now is to use Docker.
 
@@ -133,10 +135,9 @@ Since Intel's acquisition of Altera, the FPGA development tools (Quartus, now un
 
 On FPGA server:
 ```bash
-# Since the FPGA server is down, this is just a rough sketch
-
+# Since the FPGA server is down, this is a rough sketch
 # 1. Install Docker
-
+...
 # 2. Pull the relevant image from Intel's Docker Hub.
 docker pull intel/oneapi-basekit:2022.1.2-devel-ubuntu18.04
 # The download is 5.6 Gb, it may take some time
@@ -173,7 +174,6 @@ docker start -ai my_oneapi_dev
 # n.b. If you ever want to get rid of it and start fresh
 docker rm my_oneapi_dev
 ```
-
 
 On Cloud VM:
 ```bash
@@ -227,18 +227,12 @@ apt-get update && apt-get install -y git
 # Vector add not compatible in the following: git clone -b 2023.1.0 https://github.com/oneapi-src/oneAPI-samples.git
 git clone -b 2022.3.0 https://github.com/oneapi-src/oneAPI-samples.git
 cd /tmp/oneAPI-samples/DirectProgramming/DPC++FPGA/Tutorials/GettingStarted/fpga_compile
-
-# We now proceed to work through the README_fpga_compile.md
-cat README_fpga_compile.md
 ```
-We are following the steps outlined here:
-https://github.com/oneapi-src/oneAPI-samples/tree/master/DirectProgramming/C%2B%2BSYCL_FPGA
-
 
 2. Work through fpga_compile for FPGA emulator
 This FPGA tutorial introduces how to compile SYCL*-compliant code for FPGA through a simple vector addition example.
-
-```
+We are following the steps outlined [here](https://github.com/oneapi-src/oneAPI-samples/tree/master/DirectProgramming/C%2B%2BSYCL_FPGA):
+```bash
 # Generate the `Makefile` by running `cmake`.
 mkdir build
 cd build
@@ -255,6 +249,7 @@ make fpga_emu
 ## Running on device: Intel(R) FPGA Emulation Device
 ## PASSED: results are correct
 ```
+
 3. Work through fpga_recompile for FPGA emulator
 This FPGA tutorial demonstrates how to separate the compilation of a program's host code and device code to save development time.
 Learning points:
@@ -388,13 +383,6 @@ apt install intel-oneapi-compiler-fpga-2025.0
 cd oneAPI-samples/DirectProgramming/C++SYCL/DenseLinearAlgebra/vector-add/
 make clean
 
-# We also have
-# Compilation Type    Command
-# FPGA Emulator       make fpga_emu
-# Optimization Report make report
-# FPGA Simulator      make fpga_sim
-# FPGA Hardware       make fpga
-
 make fpga_emu
 ./vector-add-buffers.fpga_emu
 #Running on device: Intel(R) FPGA Emulation Device
@@ -410,21 +398,15 @@ make fpga_emu
 # Currently the make fpga_sim is not supported 
 # since currently we do not have Questa simulator on our machine.
 
-# Quartus we need a newer version
-wget 'https://downloads.intel.com/akdlm/software/acdsinst/24.2/40/ib_tar/Quartus-pro-24.2.0.40-linux-complete.tar'
-# Extract
-tar -xf Quartus-pro-24.2.0.40-linux-complete.tar
-./setup_pro.sh 
-# Or the 23.3 version
+# Quartus we need a newer version - the 23.3 version
 wget -c https://downloads.intel.com/akdlm/software/acdsinst/23.3/104/ib_tar/Quartus-pro-23.3.0.104-linux-complete.tar
+tar -xf Quartus-pro-23.3.0.104-linux-complete.tar
+./setup_pro.sh 
 
-
-
-export QUARTUS_ROOTDIR=/root/intelFPGA_pro/21.2/quartus
-export QUARTUS_ROOTDIR_OVERRIDE=/root/intelFPGA_pro/21.2/quartus
+export QUARTUS_ROOTDIR=/root/intelFPGA_pro/23.3/quartus
+export QUARTUS_ROOTDIR_OVERRIDE=/root/intelFPGA_pro/23.3/quartus
 
 make fpga
-
 ```
 
 ### Useful Information
@@ -437,6 +419,14 @@ The three types of FPGA compilation are summarized in the table below.
 | FPGA Emulator        | seconds         | The FPGA device code is compiled to the CPU. <br> This is used to verify the code's functional correctness.
 | Optimization Report  | minutes         | The FPGA device code is partially compiled for hardware. <br> The compiler generates an optimization report that describes the structures generated on the FPGA, identifies performance bottlenecks, and estimates resource utilization.
 | FPGA Hardware        | hours           | Generates the real FPGA bitstream to execute on the target FPGA platform
+
+
+| We also have
+| Compilation Type    | Command
+| FPGA Emulator       | make fpga_emu
+| Optimization Report | make report
+| FPGA Simulator      | make fpga_sim
+| FPGA Hardware       | make fpga
 
 The typical FPGA development workflow is to iterate in each of these stages, refining the code using the feedback provided by that stage. Intel® recommends relying on emulation and the optimization report whenever possible.
 
