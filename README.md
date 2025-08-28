@@ -1,8 +1,8 @@
 # OneAPI and Agilex Technical Setup
 
-This guide details the process of setting up a development environment for Intel FPGAs using the oneAPI toolkit. Due to version incompatibilities between oneAPI and Quartus, the recommended approach is to use a Docker container to ensure a consistent and isolated environment. See the new [FOOD](https://github.com/thomas-dsl-johnson/FOOD) repository.
+This guide details the process of setting up a development environment for Intel FPGAs using the oneAPI toolkit. Due to version incompatibilities between oneAPI and Quartus, the approach in this repo met several obstacles. The recommended approach is to use a Docker container to ensure a consistent and isolated environment. **See the new [FOOD](https://github.com/thomas-dsl-johnson/FOOD) repository**.
 
-The legacy guide for a native installation is included below for historical context.
+The legacy approach is included below for reference. It details the journey that led to the creation of the FOOD repository.
 
 ## Configuration-of-oneAPI-FPGA-Runtime-for-DE10-Agilex
 
